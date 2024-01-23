@@ -1,0 +1,113 @@
+В первоначальной стадии разработки, и обучения Java. Непосредственно мной был сделан первый мод.
+Расчитанный в певрую очередь на изучение и применения механик использования и создания команд.
+В данном случае, в моде представленно использование команд, сохранающие координаты игрока, 
+в дальнейшем которые возвращаются, и используются для перемещения игрока на координаты.
+По просту говоря, мод который внедряет в игру одну из возможностей функционала плагина
+EssentialsX. А именно /sethome|/home - соответственно. В данном моде была предоставленна
+возможность для продумывания концепции работы команды, и её эксплуатация. Естественно
+мод не повторяет весь функционал команды EssentialsX, для предотвращения авторского навлечения,
+однако в свою очередь внесены свои изменения в функционал работы команды. Код предоставлю.
+
+
+
+
+package	com.example.examplemod;
+
+import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import net.minecraft.command.CommandBase;
+import net.minecraft.command.CommandException;
+import net.minecraft.command.ICommandSender;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
+
+@Mod(modid = "gohome",name = "Go Home",version = "1.0.3")
+
+public class CommandSetHome extends CommandBase {
+
+	@Override
+	public String getCommandName() {
+		return "sethome"; 
+	}
+	
+    @Override
+    public boolean canCommandSenderUseCommand(ICommandSender sender) {
+        return true;
+    }
+
+	@Override
+	public String getCommandUsage(ICommandSender sender) {
+		return "/sethome - установить точку дома";
+	}
+
+	@Override
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+		if (sender instanceof EntityPlayer) {
+			EntityPlayer player = (EntityPlayer) sender;
+			
+			if (player.getEntityWorld().provider.dimensionId == 0) {
+			
+				player.getEntityData().setDouble("HomeX", player.posX);
+				player.getEntityData().setDouble("HomeY", player.posY);
+				player.getEntityData().setDouble("HomeZ", player.posZ);
+            
+				ChatComponentText message = new ChatComponentText("Точка дома установлена !");
+				message.getChatStyle().setColor(EnumChatFormatting.GREEN);
+				sender.addChatMessage(message);
+			}
+			else {
+				ChatComponentText message = new ChatComponentText("Вы не можете установить точку дома в этом измерении !");
+				message.getChatStyle().setColor(EnumChatFormatting.RED);
+				sender.addChatMessage(message);
+			}
+		}
+	}
+
+public class CommandGoHome extends CommandBase{
+
+	@Override
+	public String getCommandName() {
+		return "home";
+	}
+
+	@Override
+	public String getCommandUsage(ICommandSender sender) {
+		return "/home - вернуться на точку дома";
+	}
+
+	@Override
+	public void processCommand(ICommandSender sender, String[] args) throws CommandException {
+		if (sender instanceof EntityPlayer) {
+			EntityPlayer player = (EntityPlayer) sender;
+			
+			double homeX = player.getEntityData().getDouble("HomeX");
+            double homeY = player.getEntityData().getDouble("HomeY");
+            double homeZ = player.getEntityData().getDouble("HomeZ");
+            
+            if (player.getEntityWorld().provider.dimensionId == 0) {
+            
+            	player.setPositionAndUpdate(homeX, homeY, homeZ);
+            
+            ChatComponentText message = new ChatComponentText("Вы вернулись домой !");
+            message.getChatStyle().setColor(EnumChatFormatting.GREEN);
+            sender.addChatMessage(message);
+            } else {
+            	ChatComponentText message = new ChatComponentText("Вы можете вернуться домой только из обычного мира !");
+                message.getChatStyle().setColor(EnumChatFormatting.RED);
+                sender.addChatMessage(message);
+            }
+            	}
+			}
+		}
+	@Mod.EventHandler
+	public void serverStarting(FMLServerStartingEvent event) {
+		event.registerServerCommand(new CommandSetHome());
+		event.registerServerCommand(new CommandGoHome());
+	}
+}
+
+
+
+В данном случае, код не нуждается в коментариях, так как из-за малого объёма, разобраться
+будет не тяжело даже новичку в программировании, единственное требование - английский язык.
